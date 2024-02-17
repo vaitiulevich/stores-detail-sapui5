@@ -1,0 +1,14 @@
+specVersion: "3.2"
+metadata:
+  name: controlaggregation
+type: application
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        ui5:
+          path:
+            - /resources
+            - /test-resources
+          url: https://openui5.hana.ondemand.com

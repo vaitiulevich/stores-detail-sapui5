@@ -1,0 +1,81 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core" >
+	<Dialog
+		title="{i18n>CreateStoreDialogTitle}">
+		<f:SimpleForm
+			id="addStoreForm"
+			maxContainerCols="1"
+			layout="ResponsiveGridLayout"
+			labelSpanL="12"
+			labelSpanM="12"
+			emptySpanL="0"
+			emptySpanM="0"
+			columnsL="1"
+			columnsM="1">
+			<f:content>
+				<Label text="{i18n>LableNameText}" required="true" labelFor="NameInput"/>
+				<Input id="NameInput" value="{
+					path: 'Name',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 15
+					}
+				}" />
+
+				<Label text="{i18n>LableEmailText}" required="true" labelFor="EmailInput"/>
+				<Input id="EmailInput" type="Email" value="{
+					path: 'Email',
+					type: 'sap.ui.model.type.String',
+					constraints: {search: '^((?!\\.)[\\w-_.]*[^.])(@\\w+)(\\.\\w+(\\.\\w+)?[^.\\W])$'}
+				}" />
+
+				<Label text="{i18n>LablePhoneNumberText}" required="true" labelFor="PhoneNumberInput"/>
+				<Input id="PhoneNumberInput" type="Tel" value="{
+					path: 'PhoneNumber',
+					type: 'sap.ui.model.type.Integer'
+				}" />
+
+				<Label text="{i18n>LableEstablishedText}" required="true" labelFor="EstablishedInput"/>
+				<DatePicker
+				id="EstablishedInput"
+				placeholder="{i18n>PlaceholderEstablished}"
+				value="{
+				path: 'Established',
+				type: 'sap.ui.model.type.Date',
+				formatOptions: {
+					pattern: 'YYYY MMM dd'
+				}
+				}"/>
+
+				<Label text="{i18n>LableAddressText}" required="true" labelFor="AddressInput"/>
+				<Input id="AddressInput" value="{
+					path: 'Address',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 50
+					}
+				}" />
+
+				<Label text="{i18n>LableFloorAreaText}" required="true" labelFor="FloorAreaInput"/>
+				<Input id="FloorAreaInput" value="{
+					path: 'FloorArea',
+					type: 'sap.ui.model.type.Integer',
+					constraints: {
+						minimum: 1,
+						maximum: 10000
+					}
+				}" />
+
+			</f:content>
+		</f:SimpleForm>
+
+		<buttons>
+			<Button text="{i18n>CreateButtonText}" press="onDialogCreateStore" />
+			<Button text="{i18n>CloseButtonText}" press="onDialogCancel" />
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controller/StoreDetails.controller.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controller/StoreDetails.controller.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>sap.ui.define(
+  [
+    "sap/ui/core/mvc/Controller",
+    "sap/ui/model/json/JSONModel",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
+    "sap/m/MessageToast",
+    "sap/m/MessageBox",
+    "sap/ui/core/Fragment",
+    "sap/ui/model/Sorter",
+    "../model/formatter",
+    "sap/ui/core/Messaging",
+  ],
+  (
+    Controller,
+    JSONModel,
+    Filter,
+    FilterOperator,
+    MessageToast,
+    MessageBox,
+    Fragment,
+    Sorter,
+    formatter,
+    Messaging
+  ) => {
+    "use strict";
+
+    return Controller.extend("kate.vaitsiulevich.controller.StoreDetails", {
+      formatter: formatter,
+      /**
+       * Controller's "init" lifecycle method.
+       *
+       * @public
+       */
+      onInit() {
+        this.oResourceBundle = this.getOwnerComponent()
+          .getModel("i18n")
+          .getResourceBundle();
+
+        Messaging.registerObject(this.getView(), true);
+
+        const oComponent = this.getOwnerComponent();
+        const oRouter = oComponent.getRouter();
+        this.aStatuses = [
+          this.oResourceBundle.getText("StatusALL"),
+          this.oResourceBundle.getText("StatusOk"),
+          this.oResourceBundle.getText("StatusStorage"),
+          this.oResourceBundle.getText("StatuOutOfStock"),
+        ];
+
+        const oAppViewModel = new JSONModel({
+          allProductsCount: 0,
+          okProductsCount: 0,
+          storageProductsCount: 0,
+          out_of_stockProductsCount: 0,
+          statuses: [
+            {
+              statusState: this.oResourceBundle.getText("StatusOk"),
+              statusName: this.oResourceBundle.getText("StatusTextOk"),
+            },
+            {
+              statusState: this.oResourceBundle.getText("StatusStorage"),
+              statusName: this.oResourceBundle.getText("StatusTextStorage"),
+            },
+            {
+              statusState: this.oResourceBundle.getText("StatuOutOfStock"),
+              statusName: this.oResourceBundle.getText("StatusTextOutOfStock"),
+            },
+          ],
+          sortType: this.oResourceBundle.getText("SORT_NONE"),
+          sortName: "",
+        });
+
+        this.getView().setModel(oAppViewModel, "appView");
+
+        oRouter
+          .getRoute("StoreDetails")
+          .attachPatternMatched(this.onPatternMatched, this);
+      },
+      /**
+       * Open Stores Overview page button press event handler.
+       *
+       * @public
+       *
+       */
+      onOpenStoresOverviewPage() {
+        const oComponent = this.getOwnerComponent();
+        oComponent.getRouter().navTo("StoresOverview");
+      },
+      /**
+       * Open Product page button press event handler.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       *
+       */
+      onOpenProductPage(oEvent) {
+        const oSource = oEvent.getSource();
+        const oCtx = oSource.getBindingContext();
+        const oComponent = this.getOwnerComponent();
+
+        oComponent.getRouter().navTo("ProductDetails", {
+          StoreID: oCtx.getObject("StoreId"),
+          ProductID: oCtx.getObject("id"),
+        });
+      },
+      /**
+       * Searching Product.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       */
+      onSearchProduct(oEvent) {
+        let aFilters = [];
+        const sQuery = oEvent.getSource().getValue();
+        if (sQuery &amp;&amp; sQuery.length > 0) {
+          aFilters = new Filter({
+            filters: [
+              new Filter("Name", FilterOperator.Contains, sQuery),
+              new Filter("Specs", FilterOperator.Contains, sQuery),
+              new Filter("MadeIn", FilterOperator.Contains, sQuery),
+              new Filter("SupplierInfo", FilterOperator.Contains, sQuery),
+              new Filter(
+                "ProductionCompanyName",
+                FilterOperator.Contains,
+                sQuery
+              ),
+            ],
+            and: false,
+          });
+        }
+        const oList = this.byId("productsTable");
+        const oBinding = oList.getBinding("items");
+        oBinding.filter(aFilters, "Application");
+      },
+      /**
+       * Show products by Select Status Product.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       */
+      onSelectStatusProduct(oEvent) {
+        const oODataModel = this.getView().getModel();
+        const sStatus = oEvent.getParameter("selectedItem").getProperty("key");
+        const sPath = this.oDialog.getBindingContext().sPath;
+        oODataModel.setProperty(sPath + "/Status", sStatus);
+      },
+      /**
+       * "Sort" button press event handler.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       *  @public
+       */
+      onSortButtonPress(oEvent) {
+        const oAppView = this.getView().getModel("appView");
+
+        const sSortName = oEvent.getSource().getId().slice(29);
+        let sSortType = oAppView.getProperty("/sortType");
+
+        switch (sSortType) {
+          case this.oResourceBundle.getText("SORT_NONE"): {
+            sSortType = this.oResourceBundle.getText("SORT_ASC");
+            break;
+          }
+
+          case this.oResourceBundle.getText("SORT_ASC"): {
+            sSortType = this.oResourceBundle.getText("SORT_DESC");
+            break;
+          }
+
+          case this.oResourceBundle.getText("SORT_DESC"): {
+            sSortType = this.oResourceBundle.getText("SORT_NONE");
+            break;
+          }
+        }
+
+        oAppView.setProperty("/sortName", sSortName);
+        oAppView.setProperty("/sortType", sSortType);
+
+        const oProductsTable = this.byId("productsTable");
+        const oItemsBinding = oProductsTable.getBinding("items");
+        const bSortDesc =
+          sSortType === this.oResourceBundle.getText("SORT_DESC");
+        const oSorter =
+          sSortType === this.oResourceBundle.getText("SORT_NONE")
+            ? new Sorter("id", false)
+            : new Sorter(sSortName, bSortDesc);
+
+        oItemsBinding.sort(oSorter);
+      },
+      /**
+       * Filter products by status.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       *
+       */
+      onFilterStatusSelect(oEvent) {
+        const sSelectKey = oEvent.getParameter("selectedKey");
+        const oBinding = this.byId("productsTable").getBinding("items");
+        let aFilters = [];
+        if (sSelectKey !== this.oResourceBundle.getText("StatusALL")) {
+          aFilters.push(new Filter("Status", FilterOperator.EQ, sSelectKey));
+        }
+        oBinding.filter(aFilters);
+      },
+      /**
+       * Delete Store.
+       *
+       * @public
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       */
+      onDeleteStore(oEvent) {
+        MessageBox.show(
+          this.oResourceBundle.getText("DeleteStoreConfirmContent"),
+          {
+            icon: MessageBox.Icon.QUESTION,
+            title: this.oResourceBundle.getText("DeleteStoreConfirmTitle"),
+            actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+            emphasizedAction: MessageBox.Action.YES,
+            onClose: (sAction) => {
+              if (sAction !== MessageBox.Action.YES) {
+                return;
+              }
+              const oCtx = oEvent.getSource().getBindingContext();
+              this._onRemoveStore(oCtx);
+            },
+          }
+        );
+      },
+      /**
+       * Remove Store event.
+       *
+       * @private
+       *
+       * @param {object} oCtx context of store.
+       *
+       */
+      _onRemoveStore(oCtx) {
+        const oODataModel = oCtx.getModel();
+        const sKey = oODataModel.createKey("/Stores", oCtx.getObject());
+
+        oODataModel.remove(sKey, {
+          success: () => {
+            MessageToast.show(
+              this.oResourceBundle.getText("MessageDeleteStoreSuccess")
+            );
+            this.onOpenStoresOverviewPage();
+          },
+          error: () => {
+            MessageToast.error(
+              this.oResourceBundle.getText("MessageDeleteStoreError")
+            );
+          },
+        });
+      },
+
+      /**
+       * Delete Product.
+       *
+       * @public
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       */
+      onDeleteProduct(oEvent) {
+        MessageBox.show(
+          this.oResourceBundle.getText("DeleteProductConfirmContent"),
+          {
+            icon: MessageBox.Icon.QUESTION,
+            title: this.oResourceBundle.getText("DeleteProductConfirmTitle"),
+            actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+            emphasizedAction: MessageBox.Action.YES,
+            onClose: (sAction) => {
+              if (sAction !== MessageBox.Action.YES) {
+                return;
+              }
+              const oCtx = oEvent.getSource().getBindingContext();
+              this._onRemoveStore(oCtx);
+            },
+          }
+        );
+      },
+      /**
+       * Remove Product event.
+       *
+       * @private
+       *
+       * @param {object} oCtx context of store.
+       *
+       */
+      _onRemoveProduct(oCtx) {
+        const oODataModel = oCtx.getModel();
+        const sKey = oODataModel.createKey("/Products", oCtx.getObject());
+        oODataModel.remove(sKey, {
+          success: () => {
+            MessageToast.show(
+              this.oResourceBundle.getText("MessageDeleteProductSuccess")
+            );
+          },
+          error: () => {
+            MessageToast.error(
+              this.oResourceBundle.getText("MessageDeleteProductError")
+            );
+          },
+        });
+      },
+
+      /**
+       * Open Create Product Dialog.
+       *
+       * @public
+       */
+      onOpenCreateProductDialog() {
+        const oView = this.getView();
+        const oODataModel = oView.getModel();
+        const sStoreId =
+          window.location.hash.split("/")[
+            window.location.hash.split("/").length - 1
+          ];
+        const oEntryCtx = oODataModel.createEntry(`/Products`, {
+          properties: {
+            StoreId: sStoreId,
+            Status: this.oResourceBundle.getText("StatusOk"),
+          },
+          success: () => {
+            MessageToast.show(
+              this.oResourceBundle.getText("MessageCreateProductSuccess")
+            );
+          },
+          error: () => {
+            MessageToast.error(
+              this.oResourceBundle.getText("MessageCreateProductError")
+            );
+          },
+        });
+
+        if (!this.oDialog) {
+          Fragment.load({
+            id: oView.getId(),
+            name: "kate.vaitsiulevich.view.fragments.CreateProductDialog",
+            controller: this,
+          }).then((oDialog) => {
+            this.oDialog = oDialog;
+            oView.addDependent(oDialog);
+            oDialog.setBindingContext(oEntryCtx);
+            oDialog.open();
+          });
+        } else {
+          this.oDialog.setBindingContext(oEntryCtx);
+          this.oDialog.open();
+        }
+      },
+      /**
+       *Dialog "Create" button press event handler.
+       *
+       * @public
+       */
+      onDialogCreateProductPress() {
+        const oODataModel = this.getView().getModel();
+        const oRequiredInputs = [
+          "NameInput",
+          "PriceInput",
+          "SpecsInput",
+          "RatingInput",
+          "SupplierInfoInput",
+          "MadeInInput",
+          "ProductionCompanyNameInput",
+        ];
+        const passedValidation =
+          this._validateEventFeedbackForm(oRequiredInputs);
+        if (!passedValidation) {
+          MessageToast.show(
+            this.oResourceBundle.getText("MessageProductNotCreate")
+          );
+          return;
+        }
+        oODataModel.submitChanges();
+        oODataModel.refresh();
+        this.oDialog.close();
+      },
+      /**
+       * "Cancel" button press event handler (in the dialog).
+       *
+       * @public
+       *
+       */
+      onDialogCancelPress() {
+        const oODataModel = this.getView().getModel();
+        const oCtx = this.oDialog.getBindingContext();
+
+        oODataModel.deleteCreatedEntry(oCtx);
+        this.oDialog.close();
+      },
+      /**
+       * "StoreDetails" route pattern matched event handler.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       *
+       */
+      onPatternMatched(oEvent) {
+        const that = this;
+        const mRouteArguments = oEvent.getParameter("arguments");
+        const sStoreID = mRouteArguments.StoreID;
+        const oODataModel = this.getView().getModel();
+
+        oODataModel.metadataLoaded().then(() => {
+          const sKey = oODataModel.createKey("/Stores", { id: sStoreID });
+          that.getView().bindObject({ path: sKey });
+        });
+        this._setStatusesCount();
+      },
+      /**
+       *Dialog "Create" button press event handler.
+       *
+       * @public
+       */
+      onDialogEditProductPress() {
+        const oODataModel = this.getView().getModel();
+        const isHasChanges = oODataModel.hasPendingChanges();
+
+        console.log(isHasChanges);
+        if (isHasChanges) {
+          oODataModel.submitChanges();
+          this.oDialog.close();
+          MessageToast.show(
+            this.oResourceBundle.getText("MessageEditProductSuccess")
+          );
+        } else {
+          MessageToast.show(
+            this.oResourceBundle.getText("MessageEditProductError")
+          );
+        }
+      },
+      /**
+       * Edit Product.
+       *
+       * @param {sap.ui.base.Event} oEvent event object.
+       *
+       * @public
+       *
+       */
+      onEditProduct(oEvent) {
+        const oCtx = oEvent.getSource().getBindingContext();
+        const oView = this.getView();
+
+        if (!this.oDialog) {
+          Fragment.load({
+            id: oView.getId(),
+            name: "kate.vaitsiulevich.view.fragments.EditProductDialog",
+            controller: this,
+          }).then((oDialog) => {
+            this.oDialog = oDialog;
+            oView.addDependent(oDialog);
+            oDialog.setBindingContext(oCtx);
+            oDialog.open();
+          });
+        } else {
+          this.oDialog.setBindingContext(oCtx);
+          this.oDialog.open();
+        }
+      },
+      /**
+       * "Cancel" button press event handler (in the dialog).
+       *
+       * @public
+       *
+       */
+      onEditDialogCancelPress() {
+        const oODataModel = this.getView().getModel();
+        const oCtx = this.oDialog.getBindingContext();
+
+        oODataModel.resetChanges();
+        oODataModel.deleteCreatedEntry(oCtx);
+        this.oDialog.close();
+      },
+
+      /**
+       * Set statuses product count.
+       *
+       * @private
+       *
+       */
+      _setStatusesCount() {
+        const oProductsTable = this.byId("productsTable");
+        const oBinding = oProductsTable.getBinding("items");
+
+        oBinding.attachDataReceived(() => {
+          const oODataModel = this.getView().getModel();
+          const oAppView = this.getView().getModel("appView");
+          const oCtx = oProductsTable.getBindingContext();
+          const sStoresPath = oODataModel.createKey(
+            "/Stores",
+            oCtx.getObject()
+          );
+
+          this.aStatuses.forEach((sStatus) => {
+            const oParams = {
+              success(sCount) {
+                oAppView.setProperty(
+                  "/" + sStatus.toLowerCase() + "ProductsCount",
+                  sCount
+                );
+              },
+              filters:
+                sStatus !== this.oResourceBundle.getText("StatusALL")
+                  ? [new Filter("Status", FilterOperator.EQ, sStatus)]
+                  : null,
+            };
+            oODataModel.read(sStoresPath + "/rel_Products/$count", oParams);
+          });
+        });
+      },
+      /**
+       * Validation inputs by id.
+       *
+       * @param {object} array of id requir inputs.
+       *
+       * @private
+       *
+       * @returns {boolean}
+       */
+      _validateEventFeedbackForm(oRequiredInputs) {
+        const _self = this;
+        let bIsValid = true;
+        oRequiredInputs.forEach((input) => {
+          const oInput = _self.getView().byId(input);
+          if (oInput.getValue() == "" || oInput.getValue() == undefined) {
+            bIsValid = false;
+          }
+        });
+        return bIsValid;
+      },
+    });
+  }
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#init">init</a></li><li><a href="global.html#onDeleteProduct">onDeleteProduct</a></li><li><a href="global.html#onDeleteStore">onDeleteStore</a></li><li><a href="global.html#onDialogCancel">onDialogCancel</a></li><li><a href="global.html#onDialogCancelPress">onDialogCancelPress</a></li><li><a href="global.html#onDialogCreateProductPress">onDialogCreateProductPress</a></li><li><a href="global.html#onDialogCreateStore">onDialogCreateStore</a></li><li><a href="global.html#onDialogEditProductPress">onDialogEditProductPress</a></li><li><a href="global.html#onEditDialogCancelPress">onEditDialogCancelPress</a></li><li><a href="global.html#onEditProduct">onEditProduct</a></li><li><a href="global.html#onFilterStatusSelect">onFilterStatusSelect</a></li><li><a href="global.html#onInit">onInit</a></li><li><a href="global.html#onOpenCreateProductDialog">onOpenCreateProductDialog</a></li><li><a href="global.html#onOpenCreateStoreDialog">onOpenCreateStoreDialog</a></li><li><a href="global.html#onOpenProductPage">onOpenProductPage</a></li><li><a href="global.html#onOpenStorePage">onOpenStorePage</a></li><li><a href="global.html#onOpenStoresOverviewPage">onOpenStoresOverviewPage</a></li><li><a href="global.html#onPatternMatched">onPatternMatched</a></li><li><a href="global.html#onPostComment">onPostComment</a></li><li><a href="global.html#onSearchProduct">onSearchProduct</a></li><li><a href="global.html#onSearchStore">onSearchStore</a></li><li><a href="global.html#onSelectStatusProduct">onSelectStatusProduct</a></li><li><a href="global.html#onSortButtonPress">onSortButtonPress</a></li><li><a href="global.html#sortTypeFormatter">sortTypeFormatter</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Jan 23 2024 20:14:36 GMT+0300 (Москва, стандартное время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

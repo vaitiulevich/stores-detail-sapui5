@@ -1,0 +1,51 @@
+<mvc:View
+	xmlns="sap.m"
+	xmlns:f="sap.f"
+	xmlns:mvc="sap.ui.core.mvc"
+	controllerName="kate.vaitsiulevich.controller.StoresOverview"
+	>
+
+		<f:DynamicPage id="storesOverview" class="sapUiNoContentPadding" showFooter="true" fitContent="true">
+			<f:title>
+				<f:DynamicPageTitle>
+					<f:heading>
+						<Title text="{i18n>BindStoreListTitleText}"/>
+					</f:heading>
+					<f:breadcrumbs>
+						<Breadcrumbs>
+							<Link text="{i18n>BindStoreListTitleText}" />
+						</Breadcrumbs>
+					</f:breadcrumbs>
+				</f:DynamicPageTitle>
+			</f:title>
+
+			<f:header>
+				<f:DynamicPageHeader pinnable="true">
+					    <SearchField search="onSearchStore" width="100%" />
+				</f:DynamicPageHeader>
+			</f:header>
+
+			<f:content>
+				<List
+				items="{/Stores}"
+				id="listStores"
+				>
+					<ObjectListItem
+					title="{Name}"
+					type="Active"
+					press="onOpenStorePage"
+					number="{FloorArea}"
+					numberUnit="{i18n>numberUnit}">
+						<ObjectAttribute text="{Address}" />
+					</ObjectListItem>
+				</List>
+			</f:content>
+			
+			<f:footer>
+				<OverflowToolbar>
+					<ToolbarSpacer/>
+					<Button icon="sap-icon://add" press="onOpenCreateStoreDialog" text="{i18n>CreateButtonText}"/>
+				</OverflowToolbar>
+			</f:footer>
+		</f:DynamicPage>
+</mvc:View>

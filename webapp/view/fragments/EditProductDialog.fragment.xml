@@ -1,0 +1,104 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:f="sap.ui.layout.form"
+	xmlns:core="sap.ui.core" >
+	<Dialog
+		title="{i18n>EditProductDialogTitle}">
+		<f:SimpleForm
+			maxContainerCols="1"
+			layout="ResponsiveGridLayout"
+			labelSpanL="12"
+			labelSpanM="12"
+			emptySpanL="0"
+			emptySpanM="0"
+			columnsL="1"
+			columnsM="1">
+			<f:content>
+				<Label text="{i18n>LableNameText}" required="true" labelFor="NameInput"/>
+				<Input value="{
+					path: 'Name',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 15
+					}
+				}" />
+
+				<Label text="{i18n>LablePriceText}" required="true" labelFor="PriceInput"/>
+				<Input value="{
+					path: 'Price',
+					type: 'sap.ui.model.type.Float',
+					formatOptions: {
+						decimals: 2
+					},
+					constraints: {
+						minimum: 1,
+						maximum: 1000000
+					}
+				}" />
+
+				<Label text="{i18n>LableSpecsText}" required="true" labelFor="SpecsInput"/>
+				<Input value="{
+					path: 'Specs',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 500
+					}
+				}" />
+
+				<Label text="{i18n>LableRatingText}" required="true" labelFor="RatingInput"/>
+				<Input value="{
+					path: 'Rating',
+					type: 'sap.ui.model.type.Integer',
+					constraints: {
+						minimum: 1,
+                        maximum: 5
+					}
+				}" />
+
+				<Label text="{i18n>LableSupplierInfoText}" required="true" labelFor="SupplierInfoInput"/>
+				<Input value="{
+					path: 'SupplierInfo',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 500
+					}
+				}" />
+
+				<Label text="{i18n>LableMadeInText}" required="true" labelFor="MadeInInput"/>
+				<Input value="{
+					path: 'MadeIn',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 50
+					}
+				}" />
+
+				<Label text="{i18n>LableProductionCompanyNameText}" required="true" labelFor="ProductionCompanyNameInput"/>
+				<Input value="{
+					path: 'ProductionCompanyName',
+					type: 'sap.ui.model.type.String',
+					constraints: {
+						minLength: 2,
+						maxLength: 100
+					}
+				}" />
+
+				<Label text="{i18n>LableStatusText}" required="true" labelFor="StatusInput"/>
+				<Select
+					forceSelection="true"
+					change="onSelectStatusProduct"
+					items="{appView>/statuses}">
+					<core:Item text="{appView>statusName}" key="{appView>statusState}"/>
+				</Select>
+			</f:content>
+		</f:SimpleForm>
+		<buttons>
+			<Button text="{i18n>EditButtonText}" press="onDialogEditProductPress" />
+			<Button text="{i18n>CloseButtonText}" press="onEditDialogCancelPress" />
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>

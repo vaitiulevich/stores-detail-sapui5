@@ -1,0 +1,110 @@
+<mvc:View
+	xmlns="sap.m"
+	xmlns:f="sap.f"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:mvc="sap.ui.core.mvc"
+	controllerName="kate.vaitsiulevich.controller.ProductDetails">
+
+	<f:DynamicPage id="productDetails">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+						<Title xmlns="sap.m" xmlns:core="sap.ui.core"
+  						core:require="{ formatMessage: 'sap/base/strings/formatMessage' }"
+  						text="{
+						parts: [
+						'i18n>BindProductDetailsTitleText',
+						'Name'
+						],
+						formatter: 'formatMessage'
+					}"
+					/>
+				</f:heading>
+				<f:breadcrumbs>
+					<Breadcrumbs>
+						<Link text="{i18n>BindStoreListTitleText}" press="onOpenStoresOverviewPage"/>
+						<Link text="{i18n>BindStoreDetailsTitleText}" press="onOpenStorePage"/>
+						<Link text="{i18n>TitleBreadcrumbsProductDetails}"/>
+					</Breadcrumbs>
+				</f:breadcrumbs>
+			</f:DynamicPageTitle>
+		</f:title>
+
+		<f:header>
+			<f:DynamicPageHeader pinnable="true">
+				<VBox>
+					<form:SimpleForm
+					id="ProductDetailsPanel"
+					layout="ColumnLayout">
+						<form:content>
+							<Label design="Bold" text="{i18n>TitlePriceColumnText}" />
+							<Text text="{Price}" />
+							<Label design="Bold" text="{i18n>TitleRatingColumnText}" />
+							<Text text="{Rating}" />
+							<Label design="Bold" text="{i18n>TitleEstablishedDateText}" />
+							<Text text="{
+								path: 'Established',
+								type: 'sap.ui.model.type.Date',
+								formatOptions: {
+									style: 'medium'
+								}
+								}" />
+							<Label design="Bold" text="{i18n>TitleMadeInText}" />
+							<Text text="{MadeIn}" />
+							<Label design="Bold" text="{i18n>TitleProductionCompanyNameText}" />
+							<Text text="{ProductionCompanyName}" />
+							<Label design="Bold" text="{i18n>TitleStatusText}" />
+							<ObjectStatus inverted="true" text="{Status}" state="{path:'Status', formatter:'.formatter.statusText'}" />
+						</form:content>
+					</form:SimpleForm>
+					<Label showColon="true" design="Bold" text="{i18n>TitleSpecsColumnText}" />
+					<Text text="{Specs}" />
+					<Label showColon="true" design="Bold" text="{i18n>TitleSupplierInfoColumnText}" />
+					<Text text="{SupplierInfo}" />
+				</VBox>
+			</f:DynamicPageHeader>
+		</f:header>
+		
+		<f:content>
+			<VBox id="feedList">
+				<HBox alignItems="Center">
+					<Label showColon="true" class="sapUiSmallMarginEnd" labelFor="authorInput" text="{i18n>LabelAuthorNameText}" />
+					<Input id="authorInput"
+					change="onEnterAuthorName"
+					placeholder="{i18n>PlaceholderInputName}"/>
+					<Label labelFor="Rating" class="sapUiSmallMarginBeginEnd" showColon="true" text="{i18n>LabelRatingText}" />
+					<RatingIndicator 
+						id="Rating" 
+						maxValue="5"
+						change="onEnterRating"
+						tooltip="{i18n>TitleRatingColumnText}"
+						class="sapUiSmallMarginBottom" />
+				</HBox>
+				<FeedInput
+				id="Message"
+				post="onPostComment"
+				icon="sap-icon://person-placeholder"
+				class="sapUiSmallMarginTopBottom" />
+				<List
+				showSeparators="Inner"
+				id="listOfComments"
+				items="{path: 'appView>/productComments',sorter: {path: 'appView>Posted',descending:true}}" >
+					<FeedListItem
+					sender="{appView>Author}"
+					icon="{AuthorPicUrl}"
+					senderPress="onSenderPress"
+					iconPress="onIconPress"
+					iconDensityAware="false"
+					info="{i18n>LabelRatingText}{appView>Rating}"
+					timestamp="{path: 'appView>Posted',
+					type: 'sap.ui.model.type.Date',
+					formatOptions: {
+						style: 'medium'
+					}}"
+					text="{appView>Message}"
+					convertLinksToAnchorTags="All"/>
+				</List>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
+</mvc:View>
